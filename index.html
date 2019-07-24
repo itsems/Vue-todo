@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Todo 範例製作</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="images/favicon.ico" rel="shortcut icon">
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/stylesheets/all.css">
+  <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js"
+    integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l"
+    crossorigin="anonymous"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/regular.js"
+    integrity="sha384-t7yHmUlwFrLxHXNLstawVRBMeSLcXTbQ5hsd0ifzwGtN7ZF7RZ8ppM7Ldinuoiif"
+    crossorigin="anonymous"></script>
+  <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js"
+    integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c"
+    crossorigin="anonymous"></script>
+  <script src="javascripts/vendor.js"></script>
+
+</head>
+
+<body class="bg-lighter">
+
+  <div class="container my-5">
+    <div class="row">
+
+
+      <div class="col-md-9 post">
+        <!-- 練習開始 -->
+        <h1 class="mt-0 text-muted">Todo 範例製作</h1>
+
+        <div class="alert alert-secondary">
+          <ol class="mb-0">
+            <li>請跟隨課程完成此章節。</li>
+          </ol>
+        </div>
+
+
+        <div id="app">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">待辦事項</span>
+            </div>
+            <input v-model="newTodo" @keyup.enter="addTodo()" type="text" class="form-control" placeholder="準備要做的任務">
+
+            <div class="input-group-append">
+              <!-- add todo btn here -->
+              <button @click="addTodo()" class="btn btn-primary" type="button">新增</button>
+            </div>
+
+          </div>
+          <div class="card text-center">
+            <div class="card-header">
+              <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                  <a @click="tab = 'all'" :class="{'active': tab =='all'}" class="nav-link" href="#">全部</a>
+                </li>
+                <li class="nav-item">
+                  <a @click="tab = 'ing'" :class="{'active': tab =='ing'}" class="nav-link" href="#">進行中</a>
+                </li>
+                <li class="nav-item">
+                  <a @click="tab = 'done'" :class="{'active': tab =='done'}" class="nav-link" href="#">已完成</a>
+                </li>
+              </ul>
+            </div>
+            <ul class="list-group list-group-flush text-left">
+
+              <!-- list start -->
+              <li v-for="(item,key) in filteredTodos" class="list-group-item">
+                <div class="d-flex">
+                  <div class="form-check">
+                    <input v-model="item.completed" :id="item.id" :class="" type="checkbox" class="form-check-input">
+                    <label :class="{'finish': item.completed}" :for="item.id" class="form-check-label">
+                      {{item.title}}
+                    </label>
+                  </div>
+
+                  <!-- delete btn here -->
+                  <button @click="deleteTask(item)" type="button" class="close ml-auto" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              </li>
+
+              <!-- edit input here -->
+              <!-- <li class="list-group-item">
+                <input type="text" class="form-control">
+              </li> -->
+            </ul>
+            <div class="card-footer d-flex justify-content-between">
+
+              <!-- unfinished todo number here -->
+              <span>還有 <span>{{unfinished}}</span>筆任務未完成</span>
+
+              <!-- clear btn here -->
+              <a @click="Clear()" href="#">清除所有任務</a>
+            </div>
+          </div>
+        </div>
+
+        <script>
+          var app = new Vue({
+            el: '#app',
+            data: {
+              todolist: [{
+                id: 123,
+                title: 'hi there',
+                completed: false
+              }],
+              newTodo: '',
+              tab: 'all'
+            },
+            methods: {
+              addTodo: function () {
+                var val = this.newTodo.trim();
+                var timestamp = Math.floor(Date.now());
+                if (!val) {
+                  return
+                }
+                this.todolist.push({
+                  id: timestamp,
+                  title: val,
+                  completed: false
+                })
+                this.newTodo = '';
+              },
+              deleteTask: function (todo) {
+                var vm = this;
+                var newIndex = vm.todolist.findIndex(function (item, key) {
+                  return todo.id === item.id;
+                })
+                this.todolist.splice(newIndex, 1);
+              },
+              Clear: function () {
+                this.todolist = []
+              }
+
+            },
+            computed: {
+              filteredTodos: function () {
+                if (this.tab == 'all') {
+                  return this.todolist;
+                } else if (this.tab == 'ing') {
+                  var CurrentTask = [];
+                  this.todolist.forEach(function (item) {
+                    if (!item.completed) {
+                      CurrentTask.push(item);
+                    }
+                  })
+                  return CurrentTask;
+                } else if (this.tab == 'done') {
+                  var CurrentTask = [];
+                  this.todolist.forEach(function (item) {
+                    if (item.completed) {
+                      CurrentTask.push(item);
+                    }
+                  })
+                  return CurrentTask;
+                }
+                return [];
+              },
+              unfinished: function () {
+                var a = 0;
+                var len = this.todolist.length;
+                for (var i = 0; i < len; i++) {
+                  if (!this.todolist[i].completed) {
+                    a++
+                  }
+                }
+                return a;
+              }
+            }
+          });
+        </script>
+
+        <style>
+          .finish {
+            text-decoration: line-through
+          }
+        </style>
+
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>
